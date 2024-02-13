@@ -12,15 +12,17 @@ import { Models } from "appwrite"
 import { useUserContext } from "@/context/AuthContext"
 import { useToast } from "../use-toast"
 import { useNavigate } from "react-router-dom"
-import { useCreatePost } from "@/lib/react-query/queriesAndMutations"
+import { useCreatePost, useUpdatePost } from "@/lib/react-query/queriesAndMutations"
 
 
 type PostForm = {
   post ?: Models.Document;
+  action :"create" | "update";
 } 
 
-const PostForm = ({post}:PostForm) => {
+const PostForm = ({post,action}:PostForm) => {
 const {mutateAsync : createPost ,isPending: isLoadingCreate} = useCreatePost();
+const {mutateAsync : updatePost ,isPending: isLoadingUpdate} = useUpdatePost();
 const {user} = useUserContext();
 const navigate = useNavigate();
 const {toast} = useToast();
@@ -36,16 +38,34 @@ const {toast} = useToast();
  
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof Postvalidation>) {
-    const newPost = await createPost({
-      userId: user.id,
-      ...values
-    })
-    if(!newPost){
-      toast({
-        title:"please try again"
+    if(action==="create"){
+      const newPost = await createPost({
+        userId: user.id,
+        ...values
       })
+      if(!newPost){
+        toast({
+          title:"please try again"
+        })
+      }
+      navigate("/");
     }
-    navigate("/");
+    else if(post && action==="update"){
+      console.log(values);
+      const updatepost = await updatePost({
+        ...values,
+        postId : post?.$id,
+        imageId : post?.imageId,
+        imageUrl : post?.imageUrl
+      })
+      if(!updatepost){
+        toast({
+          title:"please try again"
+        })
+      }
+      navigate(`/post-details/${post.$id}`);
+    }
+    
   }
   return (
     <Form {...form}>

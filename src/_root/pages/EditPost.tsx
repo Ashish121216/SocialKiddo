@@ -7,7 +7,6 @@ import { useParams } from 'react-router-dom'
 const EditPost = () => {
   const {id}  = useParams();
   const {data : post , isPending} = usegetPostbyId(id || '');
-  console.log(post);
   return (
     <div className='flex flex-1'>
       <div className="common-container">
@@ -18,7 +17,7 @@ const EditPost = () => {
         {isPending ? (
           <div><Loader /></div>
         ):(
-          <PostForm post={post} />
+          <PostForm action='update' post = {post} />
         )}
       </div>  
     </div>
